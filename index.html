@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f5c4d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Planejador de Folgas 2027 — São Bernardo do Campo</title>
+<meta name="description" content="Planejamento pessoal de abonadas, TRE, férias e feriadões em 2027 para servidores de São Bernardo do Campo.">
+<style>
+/* =========================================================
+   ESTILOS — tema claro, legível, pensado para celular
+   ========================================================= */
+:root{
+  --bg:#f4f1ea; --card:#fffdf8; --ink:#1d2321; --muted:#68716d; --line:#e2ddd2;
+  --brand:#0f5c4d; --brand-2:#16806b; --brand-soft:#dcefe9;
+  --feriado:#d93a32; --ponte:#ee8a1c; --abonada:#2f6fd6; --aniv:#8a4fc7;
+  --tre:#1f9d55; --ferias:#e8b912; --fac:#c2577d; --info:#8d969a;
+  --danger:#c0392b; --ok:#1f9d55; --warn:#b7791f;
+  --radius:16px; --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(30,40,35,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.4;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+h1,h2,h3{margin:0;line-height:1.2}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%;color:var(--ink)}
+label{font-size:.85rem;color:var(--muted);display:block;margin:8px 0 4px}
+
+header.top{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;padding:18px 16px 22px}
+header.top h1{font-size:1.25rem;font-weight:800;letter-spacing:-.01em}
+header.top p{margin:4px 0 0;opacity:.85;font-size:.9rem}
+main{max-width:1100px;margin:0 auto;padding:12px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);margin-bottom:12px}
+.card h2{font-size:1.05rem;margin-bottom:8px}
+.card h3{font-size:.95rem;margin:10px 0 6px}
+.muted{color:var(--muted);font-size:.88rem}
+.small{font-size:.8rem}
+
+/* Painel de resumo */
+.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:-26px}
+@media(min-width:760px){.summary{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--card);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow);border:1px solid var(--line);border-top:4px solid var(--c,var(--brand))}
+.stat .lbl{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat .big{font-size:1.6rem;font-weight:800;margin:2px 0}
+.stat .sub{font-size:.8rem;color:var(--muted)}
+.bar{height:6px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:6px}
+.bar>i{display:block;height:100%;background:var(--c,var(--brand))}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+@media(min-width:760px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{background:var(--brand-soft);border-radius:12px;padding:10px}
+.kpi b{display:block;font-size:1.3rem;color:var(--brand)}
+.kpi span{font-size:.78rem;color:var(--muted)}
+
+/* Legenda */
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.8rem}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
+.d-feriado{background:var(--feriado)}.d-ponte{background:var(--ponte)}.d-abonada{background:var(--abonada)}
+.d-aniversario{background:var(--aniv)}.d-tre{background:var(--tre)}.d-ferias{background:var(--ferias)}
+.d-facultativo{background:var(--fac)}.d-informativo{background:var(--info)}
+
+/* Calendário */
+.months{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:640px){.months{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1000px){.months{grid-template-columns:repeat(3,1fr)}}
+.month h3{font-size:1rem;margin:0 0 8px;display:flex;justify-content:space-between;align-items:center}
+.month h3 small{font-weight:500;color:var(--muted);font-size:.75rem}
+.grid7{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.wd{font-size:.7rem;text-align:center;color:var(--muted);font-weight:700;padding:2px 0}
+.day{position:relative;min-height:46px;border-radius:9px;border:1px solid transparent;background:#fff;padding:3px 2px 14px;text-align:center;font-size:.9rem;font-weight:600;color:var(--ink);transition:transform .08s}
+.day:active{transform:scale(.94)}
+.day.empty{background:transparent;pointer-events:none}
+.day.we{background:#efece4;color:var(--muted)}
+.day.rest{box-shadow:inset 0 0 0 2px var(--brand-soft)}
+.day.k-feriado{background:#fde4e2;color:var(--feriado)}
+.day.k-ponte{background:#fdebd6;color:#a55a07}
+.day.k-facultativo{background:#f8e1ea;color:var(--fac)}
+.day.k-ferias{background:#fbf1c5}
+.day.k-abonada{background:#dde8fb}
+.day.k-aniversario{background:#ece0f8}
+.day.k-tre{background:#d9f2e3}
+.day.conflict{border-color:var(--danger);box-shadow:0 0 0 2px rgba(192,57,43,.25)}
+.day.today{outline:2px solid var(--brand);outline-offset:-2px}
+.day .dots{position:absolute;bottom:4px;left:0;right:0;display:flex;justify-content:center;gap:2px}
+.day .dots .dot{width:7px;height:7px}
+
+/* Botões */
+.btn{border:none;border-radius:12px;padding:12px 16px;font-weight:700;background:var(--brand);color:#fff;min-height:46px}
+.btn.sec{background:var(--brand-soft);color:var(--brand)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn.danger{background:var(--danger)}
+.btn.sm{padding:8px 12px;min-height:38px;font-size:.88rem;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>.grow{flex:1;min-width:140px}
+.stack>*+*{margin-top:8px}
+
+/* Abas inferiores */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom);z-index:20}
+nav.tabs button{border:none;background:none;padding:8px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.75rem;color:var(--muted);font-weight:600}
+nav.tabs button .ic{font-size:1.35rem}
+nav.tabs button.on{color:var(--brand)}
+nav.tabs button.on .ic{transform:translateY(-1px)}
+.view{display:none}.view.on{display:block}
+
+/* Mensagens */
+.alert{border-radius:12px;padding:10px 12px;font-size:.88rem;margin:6px 0}
+.alert.err{background:#fbe3e0;color:#8c2318}
+.alert.ok{background:#dcf3e5;color:#13633a}
+.alert.warn{background:#fdf0d5;color:#7a4f0c}
+.alert.info{background:var(--brand-soft);color:var(--brand)}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#1d2321;color:#fff;padding:12px 16px;border-radius:12px;font-size:.9rem;max-width:92vw;opacity:0;transition:.25s;z-index:60;pointer-events:none;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--danger)}
+
+/* Modal / folha inferior */
+.backdrop{position:fixed;inset:0;background:rgba(20,25,22,.45);display:none;z-index:40;align-items:flex-end;justify-content:center}
+.backdrop.on{display:flex}
+.sheet{background:var(--card);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto;animation:up .2s ease}
+@media(min-width:640px){.backdrop{align-items:center}.sheet{border-radius:20px}}
+@keyframes up{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
+.sheet h2{font-size:1.15rem}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;background:#f0ede6;font-size:.82rem;margin:3px 4px 3px 0}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.choice .btn{display:flex;align-items:center;justify-content:center;gap:6px}
+
+/* Combos / estratégias */
+.combo{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;background:#fff}
+.combo .hd{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.combo .len{font-size:1.5rem;font-weight:800;color:var(--brand);line-height:1}
+.combo .len small{font-size:.75rem;font-weight:600;color:var(--muted);display:block}
+.strip{display:flex;gap:2px;margin:8px 0;flex-wrap:wrap}
+.strip i{width:14px;height:18px;border-radius:4px;display:block;background:#efece4}
+.strip i.feriado{background:var(--feriado)}.strip i.ponte{background:var(--ponte)}.strip i.tre{background:var(--tre)}
+.strip i.ferias{background:var(--ferias)}.strip i.fds{background:#b9b3a4}.strip i.facultativo{background:var(--fac)}
+.strip i.abonada{background:var(--abonada)}.strip i.aniversario{background:var(--aniv)}
+.badge{display:inline-block;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--brand-soft);color:var(--brand)}
+.badge.warn{background:#fdf0d5;color:#7a4f0c}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 6px;font-weight:700;font-size:.85rem;min-height:56px}
+.seg button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+/* Tabela de eventos */
+.ev{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;background:#fff}
+.ev .t{font-weight:700}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.switch:last-child{border-bottom:none}
+.switch input{width:auto;transform:scale(1.4)}
+ul.rules{padding-left:18px;margin:6px 0}
+ul.rules li{margin:4px 0;font-size:.9rem}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>Planejador de Folgas 2027</h1>
+  <p id="hello">São Bernardo do Campo</p>
+</header>
+
+<main>
+  <!-- Resumo sempre visível -->
+  <section class="summary" id="summary"></section>
+  <section class="card" style="margin-top:12px">
+    <div class="kpis" id="kpis"></div>
+    <div id="conflicts"></div>
+  </section>
+
+  <!-- ABA CALENDÁRIO -->
+  <section class="view on" id="v-cal">
+    <div class="card">
+      <div class="legend">
+        <span><i class="dot d-feriado"></i>Feriado</span>
+        <span><i class="dot d-ponte"></i>Ponte</span>
+        <span><i class="dot d-facultativo"></i>Ponto facultativo</span>
+        <span><i class="dot d-abonada"></i>Abonada</span>
+        <span><i class="dot d-aniversario"></i>Aniversário</span>
+        <span><i class="dot d-tre"></i>TRE</span>
+        <span><i class="dot d-ferias"></i>Férias</span>
+      </div>
+      <p class="muted small" style="margin:8px 0 0">Toque em um dia para ver detalhes ou marcar uma folga.</p>
+    </div>
+    <div class="months" id="months"></div>
+  </section>
+
+  <!-- ABA OTIMIZADOR -->
+  <section class="view" id="v-opt">
+    <div class="card">
+      <h2>🧠 Otimizador de Folgas</h2>
+      <p class="muted">Escolha uma estratégia. O otimizador monta um plano completo (férias, TRE, abonadas e aniversário) respeitando todas as regras. Você pode aplicar e depois ajustar manualmente.</p>
+      <div class="seg" id="stratSeg">
+        <button data-s="feriadoes" class="on">Maximizar<br>feriadões</button>
+        <button data-s="longos">Períodos<br>longos</button>
+        <button data-s="equilibrada">Equilibrada</button>
+      </div>
+      <div id="stratOut" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h2>⚡ SUPER COMBOS 2027</h2>
+      <p class="muted">Melhores oportunidades do calendário usando apenas fins de semana, feriados, pontes, TRE e férias. Abonadas e folga de aniversário nunca entram em combos.</p>
+      <div class="row" style="margin:8px 0">
+        <button class="btn sm sec" data-cf="all">Todos</button>
+        <button class="btn sm ghost" data-cf="tre">Só TRE</button>
+        <button class="btn sm ghost" data-cf="ferias">Com férias</button>
+      </div>
+      <div id="combos"></div>
+    </div>
+  </section>
+
+  <!-- ABA FÉRIAS -->
+  <section class="view" id="v-fer">
+    <div class="card">
+      <h2>🏖️ Férias 2027 — 15 + 15 dias</h2>
+      <p class="muted">Escolha a data de início de cada período. Cada período tem exatamente 15 dias corridos.</p>
+      <div id="vacForm"></div>
+    </div>
+    <div class="card">
+      <h2>Melhores inícios para 15 dias</h2>
+      <p class="muted">Considera fins de semana, feriados e pontes antes e depois do período (sem gastar outros recursos).</p>
+      <div id="vacBest"></div>
+    </div>
+  </section>
+
+  <!-- ABA CONFIGURAÇÕES -->
+  <section class="view" id="v-cfg">
+    <div class="card">
+      <h2>⚙️ Configurações</h2>
+      <label for="cfgName">Seu nome</label>
+      <input id="cfgName" placeholder="Ex.: Yuri">
+      <label for="cfgBday">Mês do aniversário</label>
+      <select id="cfgBday"></select>
+      <div class="switch"><div><b>Pontes automáticas</b><div class="muted small">Feriado na terça → segunda é ponte. Feriado na quinta → sexta é ponte.</div></div><input type="checkbox" id="cfgBridges"></div>
+      <div class="switch"><div><b>Abonada não pode emendar fim de semana</b><div class="muted small">Ligado: abonada/aniversário também não podem encostar em sábado/domingo (só terça a quinta "isoladas"). Desligado: proíbe apenas emendar feriado/ponte/ponto facultativo.</div></div><input type="checkbox" id="cfgStrict"></div>
+    </div>
+
+    <div class="card">
+      <h2>Datas administrativas e feriados</h2>
+      <p class="muted">Edite livremente. Datas marcadas com <span class="badge warn">confirmar</span> foram pré-configuradas e precisam ser conferidas com o calendário oficial da Prefeitura.</p>
+      <button class="btn sec" id="addEv" style="width:100%;margin:8px 0">+ Adicionar data</button>
+      <div id="evList"></div>
+    </div>
+
+    <div class="card">
+      <h2>Backup</h2>
+      <div class="stack">
+        <button class="btn sec" id="expBtn" style="width:100%">⬇️ Exportar planejamento (JSON)</button>
+        <button class="btn sec" id="impBtn" style="width:100%">⬆️ Importar planejamento (JSON)</button>
+        <input type="file" id="impFile" accept="application/json,.json" style="display:none">
+        <button class="btn sec" id="clearBtn" style="width:100%">Limpar só as minhas folgas</button>
+        <button class="btn danger" id="resetBtn" style="width:100%">Restaurar planejamento original</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Regras aplicadas</h2>
+      <ul class="rules">
+        <li><b>Abonadas:</b> 6 no ano, no máximo 1 por mês. Não podem criar nem ampliar feriadões (nem cair em ponte).</li>
+        <li><b>Aniversário:</b> 1 folga, obrigatoriamente no mês do aniversário, separada das abonadas, com a mesma proibição de emendar.</li>
+        <li><b>TRE:</b> 6 dias, qualquer mês, pode emendar feriado, ponte, férias e fim de semana.</li>
+        <li><b>Férias:</b> 30 dias divididos em 2 períodos de 15 dias corridos, sem sobreposição.</li>
+        <li><b>Pontes:</b> automáticas para feriados em terça (segunda) e quinta (sexta). Não consomem recursos.</li>
+        <li>Nenhuma folga pessoal pode cair em fim de semana, feriado, ponte, ponto facultativo ou dentro das férias.</li>
+        <li>Os dados ficam salvos neste aparelho (chave <code>folgas_sbc_2027</code>).</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<nav class="tabs" id="tabs">
+  <button data-v="v-cal" class="on"><span class="ic">📅</span>Calendário</button>
+  <button data-v="v-opt"><span class="ic">🧠</span>Otimizador</button>
+  <button data-v="v-fer"><span class="ic">🏖️</span>Férias</button>
+  <button data-v="v-cfg"><span class="ic">⚙️</span>Config.</button>
+</nav>
+
+<div class="backdrop" id="bd"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* =========================================================
+   CONSTANTES
+   ========================================================= */
+const YEAR = 2027;
+const STORAGE_KEY = "folgas_sbc_2027";
+const MAX_ABONADAS = 6, MAX_TRE = 6, VAC_LEN = 15;
+const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const DIAS = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+const DIAS_LONG = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
+const CONFIRMAR = "Pré-configurada — confirmar com calendário oficial da Prefeitura";
+const TYPE_LABEL = {feriado:"Feriado",facultativo:"Ponto facultativo",ponte:"Ponte administrativa",informativo:"Informativo (não é folga)"};
+const MARK_LABEL = {abonada:"Abonada",aniversario:"Folga de aniversário",tre:"TRE (mesário)"};
+
+/* =========================================================
+   UTILITÁRIOS DE DATA (tudo em UTC para evitar fuso/horário de verão)
+   ========================================================= */
+const DAY_MS = 86400000;
+const START_MS = Date.UTC(YEAR,0,1);
+const NDAYS = 365; // 2027 não é bissexto
+const idxToKey = i => new Date(START_MS + i*DAY_MS).toISOString().slice(0,10);
+const keyToIdx = k => Math.round((Date.parse(k+"T00:00:00Z") - START_MS)/DAY_MS);
+const dow = i => new Date(START_MS + i*DAY_MS).getUTCDay();
+const monthOf = i => new Date(START_MS + i*DAY_MS).getUTCMonth();
+const isWeekend = i => { const d = dow(i); return d===0 || d===6; };
+const fmt = i => { const d=new Date(START_MS+i*DAY_MS); return String(d.getUTCDate()).padStart(2,"0")+"/"+String(d.getUTCMonth()+1).padStart(2,"0"); };
+const fmtLong = i => fmt(i)+" ("+DIAS_LONG[dow(i)]+")";
+const inYear = i => i>=0 && i<NDAYS;
+const uid = () => Math.random().toString(36).slice(2,10);
+
+/* =========================================================
+   CALENDÁRIO PADRÃO 2027
+   Páscoa 2027 = 28/03 → Carnaval 08–09/02, Sexta Santa 26/03, Corpus Christi 27/05.
+   Datas municipais/administrativas ficam marcadas como "confirmar".
+   ========================================================= */
+function defaultEvents(){
+  const E = (date,name,type,note,confirm) => ({id:uid(),date,name,type,note:note||"",confirm:!!confirm});
+  return [
+    E("2027-01-01","Confraternização Universal","feriado","Feriado nacional"),
+    E("2027-02-08","Carnaval (segunda)","facultativo","Ponto facultativo — "+CONFIRMAR,true),
+    E("2027-02-09","Carnaval (terça)","facultativo","Ponto facultativo — "+CONFIRMAR,true),
+    E("2027-02-10","Quarta-feira de Cinzas","informativo","Normalmente expediente a partir do meio-dia — "+CONFIRMAR,true),
+    E("2027-03-26","Sexta-feira Santa (Paixão)","feriado","Feriado nacional"),
+    E("2027-04-21","Tiradentes","feriado","Feriado nacional"),
+    E("2027-05-01","Dia do Trabalho","feriado","Feriado nacional (cai no sábado)"),
+    E("2027-05-27","Corpus Christi","feriado","Feriado municipal/ponto facultativo — "+CONFIRMAR,true),
+    E("2027-07-09","Revolução Constitucionalista","feriado","Feriado estadual (SP)"),
+    E("2027-08-20","Aniversário de São Bernardo do Campo","feriado","Feriado municipal — "+CONFIRMAR,true),
+    E("2027-09-07","Independência do Brasil","feriado","Feriado nacional"),
+    E("2027-10-12","Nossa Senhora Aparecida","feriado","Feriado nacional"),
+    E("2027-10-28","Dia do Funcionário Público","facultativo","A Prefeitura pode transferir a data — "+CONFIRMAR,true),
+    E("2027-11-02","Finados","feriado","Feriado nacional"),
+    E("2027-11-15","Proclamação da República","feriado","Feriado nacional"),
+    E("2027-11-20","Dia da Consciência Negra","feriado","Feriado nacional (cai no sábado)"),
+    E("2027-12-24","Véspera de Natal","facultativo","Ponto facultativo — "+CONFIRMAR,true),
+    E("2027-12-25","Natal","feriado","Feriado nacional"),
+    E("2027-12-31","Véspera de Ano Novo","facultativo","Ponto facultativo — "+CONFIRMAR,true)
+  ];
+}
+function defaultState(){
+  return { version:1, userName:"", birthdayMonth:5 /* 0=jan → 5=junho */, autoBridges:true, strictWeekend:true,
+           events:defaultEvents(), marks:{}, vacations:[null,null] };
+}
+
+/* =========================================================
+   ESTADO + LOCALSTORAGE
+   ========================================================= */
+let S = load();
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){ return sanitize(JSON.parse(raw)); }
+  }catch(e){ console.warn("Falha ao ler LocalStorage", e); }
+  return defaultState();
+}
+/* Garante que um objeto carregado/importado tenha formato válido */
+function sanitize(o){
+  const d = defaultState();
+  if(!o || typeof o!=="object") return d;
+  const s = {
+    version:1,
+    userName: typeof o.userName==="string" ? o.userName.slice(0,60) : "",
+    birthdayMonth: Number.isInteger(o.birthdayMonth) && o.birthdayMonth>=0 && o.birthdayMonth<12 ? o.birthdayMonth : 5,
+    autoBridges: o.autoBridges!==false,
+    strictWeekend: o.strictWeekend!==false,
+    events: Array.isArray(o.events) ? o.events.filter(e=>e && /^2027-\d\d-\d\d$/.test(e.date) && TYPE_LABEL[e.type]).map(e=>({
+      id: String(e.id||uid()), date:e.date, name:String(e.name||"Evento").slice(0,80), type:e.type,
+      note:String(e.note||"").slice(0,200), confirm:!!e.confirm })) : d.events,
+    marks:{}, vacations:[null,null]
+  };
+  if(o.marks && typeof o.marks==="object"){
+    for(const k in o.marks){ if(/^2027-\d\d-\d\d$/.test(k) && MARK_LABEL[o.marks[k]]) s.marks[k]=o.marks[k]; }
+  }
+  if(Array.isArray(o.vacations)){
+    for(let p=0;p<2;p++){ const v=o.vacations[p]; if(v && typeof v.start==="string" && /^2027-\d\d-\d\d$/.test(v.start)) s.vacations[p]={start:v.start}; }
+  }
+  return s;
+}
+function save(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); }
+  catch(e){ toast("Não foi possível salvar no aparelho.", true); }
+}
+
+/* =========================================================
+   MODELO DO DIA
+   Para cada índice do ano calculamos:
+   - eventos (feriado / facultativo / ponte manual / informativo)
+   - ponte automática
+   - férias (período 1 ou 2)
+   - marca pessoal (abonada / aniversário / tre)
+   ========================================================= */
+function eventsByIdx(){
+  const m = {};
+  for(const e of S.events){ const i=keyToIdx(e.date); if(inYear(i)) (m[i]=m[i]||[]).push(e); }
+  return m;
+}
+/* Pontes automáticas: feriado (ou ponto facultativo de dia inteiro) em terça → segunda; em quinta → sexta */
+function autoBridges(evMap){
+  const b = {};
+  if(!S.autoBridges) return b;
+  for(const i in evMap){
+    const idx = +i;
+    if(!evMap[i].some(e=>e.type==="feriado"||e.type==="facultativo")) continue;
+    const d = dow(idx);
+    let t = null;
+    if(d===2) t = idx-1; else if(d===4) t = idx+1;
+    if(t!==null && inYear(t)){
+      const already = (evMap[t]||[]).some(e=>e.type==="feriado"||e.type==="facultativo"||e.type==="ponte");
+      if(!already) b[t] = evMap[i].find(e=>e.type==="feriado"||e.type==="facultativo").name;
+    }
+  }
+  return b;
+}
+function vacRange(p){ const v=S.vacations[p]; if(!v) return null; const s=keyToIdx(v.start); return [s, s+VAC_LEN-1]; }
+
+/* Monta a "fotografia" do ano. Usada por calendário, validação e estatísticas. */
+function buildYear(){
+  const ev = eventsByIdx(), br = autoBridges(ev);
+  const days = [];
+  const vr = [vacRange(0), vacRange(1)];
+  for(let i=0;i<NDAYS;i++){
+    const evs = ev[i]||[];
+    const d = {
+      i, weekend:isWeekend(i), events:evs,
+      feriado: evs.some(e=>e.type==="feriado"),
+      facultativo: evs.some(e=>e.type==="facultativo"),
+      ponte: evs.some(e=>e.type==="ponte") || !!br[i],
+      autoPonte: br[i]||null,
+      vac: vr[0]&&i>=vr[0][0]&&i<=vr[0][1] ? 1 : vr[1]&&i>=vr[1][0]&&i<=vr[1][1] ? 2 : 0,
+      mark: S.marks[idxToKey(i)]||null
+    };
+    d.official = d.weekend || d.feriado || d.facultativo || d.ponte; // descanso sem gastar recurso
+    d.rest = d.official || d.vac>0 || !!d.mark;
+    days.push(d);
+  }
+  return days;
+}
+/* Tipo principal do dia (para cor) */
+function mainKind(d){
+  if(d.feriado) return "feriado";
+  if(d.ponte) return "ponte";
+  if(d.facultativo) return "facultativo";
+  if(d.vac) return "ferias";
+  if(d.mark) return d.mark;
+  return null;
+}
+
+/* =========================================================
+   REGRA DE "NÃO EMENDAR" (abonada e aniversário)
+   Olha o bloco de descanso que ficaria encostado no dia (para trás e para frente).
+   Se esse bloco contém feriado, ponte ou ponto facultativo → proibido.
+   Se a opção estrita estiver ligada, encostar em fim de semana também é proibido.
+   ========================================================= */
+function emendaReason(days, i){
+  const touch = [];
+  for(let j=i-1; j>=0 && days[j].rest; j--) touch.push(j);
+  for(let j=i+1; j<NDAYS && days[j].rest; j++) touch.push(j);
+  // fronteira do ano: 31/12 e 01/01 são feriados/facultativos, tratamos como descanso
+  if(i===0 || i===NDAYS-1) return "Encosta na virada do ano (feriado de 1º de janeiro).";
+  const hol = touch.find(j=>days[j].feriado||days[j].ponte||days[j].facultativo);
+  if(hol!==undefined){
+    const d=days[hol]; const what = d.feriado?"feriado":d.ponte?"ponte administrativa":"ponto facultativo";
+    return "Emendaria o "+what+" de "+fmt(hol)+" ("+(d.events[0]?d.events[0].name:d.autoPonte?"ponte de "+d.autoPonte:"")+"), ampliando o feriadão.";
+  }
+  if(S.strictWeekend && touch.some(j=>days[j].weekend)) return "Encostaria no fim de semana, ampliando o descanso (regra estrita ligada nas Configurações).";
+  return null;
+}
+
+/* =========================================================
+   VALIDAÇÃO DE UMA NOVA MARCAÇÃO
+   Retorna null se pode, ou texto explicando o motivo.
+   ========================================================= */
+function canMark(type, i, days){
+  days = days || buildYear();
+  const d = days[i];
+  const key = idxToKey(i);
+  // simula o dia sem a marca atual (para permitir trocar o tipo)
+  const cur = S.marks[key];
+  if(d.weekend) return "Este dia já é fim de semana — não precisa gastar folga.";
+  if(d.feriado) return "Este dia já é feriado.";
+  if(d.ponte) return "Este dia já é ponte administrativa — não consome recursos.";
+  if(d.facultativo) return "Este dia já é ponto facultativo.";
+  if(d.vac) return "Este dia está dentro das férias "+d.vac+".";
+  const counts = countMarks(); if(cur) counts[cur]--;
+  if(type==="tre"){
+    if(counts.tre>=MAX_TRE) return "Você já usou os 6 dias de TRE.";
+    return null;
+  }
+  // regra de não emendar (recalcula sem a marca atual)
+  const tmp = days.map(x=>x);
+  if(cur){ tmp[i] = Object.assign({}, d, {mark:null, rest:false}); }
+  if(type==="abonada"){
+    if(counts.abonada>=MAX_ABONADAS) return "Você já usou as 6 abonadas.";
+    const m = monthOf(i);
+    const other = Object.keys(S.marks).find(k=>S.marks[k]==="abonada" && k!==key && monthOf(keyToIdx(k))===m);
+    if(other) return "Já existe abonada em "+MESES[m]+" ("+fmt(keyToIdx(other))+"). Só pode 1 por mês.";
+    const r = emendaReason(tmp,i); if(r) return "Abonada não permitida: "+r+" Use TRE para emendas.";
+    return null;
+  }
+  if(type==="aniversario"){
+    if(monthOf(i)!==S.birthdayMonth) return "A folga de aniversário precisa ser em "+MESES[S.birthdayMonth]+".";
+    if(counts.aniversario>=1) return "A folga de aniversário já foi usada.";
+    const r = emendaReason(tmp,i); if(r) return "Folga de aniversário não permitida: "+r;
+    return null;
+  }
+  return "Tipo desconhecido.";
+}
+function countMarks(){
+  const c = {abonada:0,aniversario:0,tre:0};
+  for(const k in S.marks) c[S.marks[k]]++;
+  return c;
+}
+
+/* =========================================================
+   VALIDAÇÃO GLOBAL (conflitos atuais do plano)
+   ========================================================= */
+function validateAll(days){
+  const errs = []; const bad = new Set();
+  const c = countMarks();
+  if(c.abonada>MAX_ABONADAS) errs.push("Mais de 6 abonadas marcadas ("+c.abonada+").");
+  if(c.tre>MAX_TRE) errs.push("Mais de 6 TRE marcados ("+c.tre+").");
+  if(c.aniversario>1) errs.push("Mais de uma folga de aniversário.");
+  const perMonth = {};
+  for(const k in S.marks){
+    const i = keyToIdx(k), t=S.marks[k], d=days[i];
+    if(d.official){ errs.push(MARK_LABEL[t]+" em "+fmt(i)+" cai em dia que já é folga (fim de semana/feriado/ponte)."); bad.add(i); }
+    if(d.vac){ errs.push(MARK_LABEL[t]+" em "+fmt(i)+" está dentro das férias "+d.vac+"."); bad.add(i); }
+    if(t==="abonada"){
+      const m=monthOf(i); perMonth[m]=(perMonth[m]||0)+1;
+      if(perMonth[m]===2) errs.push("Duas abonadas em "+MESES[m]+".");
+      if(perMonth[m]>=2) bad.add(i);
+    }
+    if(t==="aniversario" && monthOf(i)!==S.birthdayMonth){ errs.push("Folga de aniversário fora de "+MESES[S.birthdayMonth]+" ("+fmt(i)+")."); bad.add(i); }
+    if(t==="abonada"||t==="aniversario"){
+      const r = emendaReason(days,i);
+      if(r){ errs.push(MARK_LABEL[t]+" em "+fmt(i)+": "+r); bad.add(i); }
+    }
+  }
+  const a=vacRange(0), b=vacRange(1);
+  [a,b].forEach((r,p)=>{ if(r && (r[1]>=NDAYS)) errs.push("Férias "+(p+1)+" ultrapassam 31/12/2027."); });
+  if(a&&b){
+    if(!(a[1]<b[0]||b[1]<a[0])) errs.push("Os dois períodos de férias se sobrepõem.");
+    else if(a[1]+1===b[0]||b[1]+1===a[0]) errs.push("Os dois períodos de férias estão colados (viraria 30 dias seguidos). Separe-os.");
+  }
+  return {errs, bad};
+}
+
+/* =========================================================
+   ESTATÍSTICAS DE DESCANSO
+   ========================================================= */
+function blocks(restArr){
+  const out=[]; let s=-1;
+  for(let i=0;i<=NDAYS;i++){
+    if(i<NDAYS && restArr[i]){ if(s<0) s=i; }
+    else if(s>=0){ out.push([s,i-1]); s=-1; }
+  }
+  return out;
+}
+function stats(days){
+  const bl = blocks(days.map(d=>d.rest));
+  let longest=null, feriadoes=0, total=0, ganhos=0;
+  for(const [s,e] of bl){
+    const len=e-s+1; total+=len;
+    if(!longest || len>longest[2]) longest=[s,e,len];
+    let hasHol=false, personal=0;
+    for(let i=s;i<=e;i++){ const d=days[i]; if(d.feriado||d.ponte||d.facultativo) hasHol=true; if(d.vac||d.mark) personal++; }
+    if(hasHol && len>=3) feriadoes++;
+    if(personal>0) ganhos += len-personal;
+  }
+  return {longest, feriadoes, total, ganhos};
+}
+
+/* =========================================================
+   RENDERIZAÇÃO — RESUMO
+   ========================================================= */
+function renderSummary(days){
+  const c = countMarks();
+  const vdays = (S.vacations[0]?VAC_LEN:0)+(S.vacations[1]?VAC_LEN:0);
+  const aniv = Object.keys(S.marks).find(k=>S.marks[k]==="aniversario");
+  const st = (lbl,big,sub,pct,col)=>`<div class="stat" style="--c:${col}"><div class="lbl">${lbl}</div><div class="big">${big}</div><div class="sub">${sub}</div><div class="bar"><i style="width:${Math.min(100,pct)}%"></i></div></div>`;
+  document.getElementById("summary").innerHTML =
+    st("Abonadas", (MAX_ABONADAS-c.abonada)+" <small style='font-size:.9rem;color:var(--muted)'>restam</small>", c.abonada+" de 6 utilizadas", c.abonada/6*100, "var(--abonada)")+
+    st("Aniversário", aniv?"Utilizada":"Disponível", aniv?"em "+fmt(keyToIdx(aniv)):"1 folga em "+MESES[S.birthdayMonth], aniv?100:0, "var(--aniv)")+
+    st("TRE", (MAX_TRE-c.tre)+" <small style='font-size:.9rem;color:var(--muted)'>restam</small>", c.tre+" de 6 utilizados", c.tre/6*100, "var(--tre)")+
+    st("Férias", vdays+" / 30", (S.vacations[0]?"15":"0")+" + "+(S.vacations[1]?"15":"0")+" planejados", vdays/30*100, "var(--ferias)");
+  const s = stats(days);
+  document.getElementById("kpis").innerHTML =
+    `<div class="kpi"><b>${s.longest?s.longest[2]:0} dias</b><span>Maior descanso${s.longest?" ("+fmt(s.longest[0])+"–"+fmt(s.longest[1])+")":""}</span></div>`+
+    `<div class="kpi"><b>${s.feriadoes}</b><span>Feriadões (3+ dias)</span></div>`+
+    `<div class="kpi"><b>${s.total}</b><span>Dias de descanso no ano</span></div>`+
+    `<div class="kpi"><b>${s.ganhos}</b><span>Dias "de graça" nos períodos com folgas</span></div>`;
+  const v = validateAll(days);
+  document.getElementById("conflicts").innerHTML = v.errs.length
+    ? `<div class="alert err" style="margin-top:10px"><b>⚠️ Conflitos encontrados:</b><ul style="margin:4px 0 0;padding-left:18px">${v.errs.map(e=>"<li>"+esc(e)+"</li>").join("")}</ul></div>`
+    : "";
+  document.getElementById("hello").textContent = (S.userName?"Olá, "+S.userName+" · ":"")+"São Bernardo do Campo";
+  return v;
+}
+
+/* =========================================================
+   RENDERIZAÇÃO — CALENDÁRIO ANUAL
+   ========================================================= */
+function renderCalendar(days, bad){
+  let html = "";
+  const todayKey = new Date().toISOString().slice(0,10);
+  for(let m=0;m<12;m++){
+    const first = keyToIdx(`${YEAR}-${String(m+1).padStart(2,"0")}-01`);
+    const nd = new Date(Date.UTC(YEAR,m+1,0)).getUTCDate();
+    let restCount=0;
+    let cells = DIAS.map(d=>`<div class="wd">${d[0]}</div>`).join("");
+    for(let k=0;k<dow(first);k++) cells += `<div class="day empty"></div>`;
+    for(let n=0;n<nd;n++){
+      const i=first+n, d=days[i]; if(d.rest) restCount++;
+      const kind = mainKind(d);
+      const dots = [];
+      if(d.feriado) dots.push("feriado");
+      if(d.ponte) dots.push("ponte");
+      if(d.facultativo) dots.push("facultativo");
+      if(d.events.some(e=>e.type==="informativo")) dots.push("informativo");
+      if(d.vac) dots.push("ferias");
+      if(d.mark) dots.push(d.mark);
+      const cls = ["day", d.weekend?"we":"", kind?"k-"+kind:"", d.rest&&!kind&&!d.weekend?"rest":"", bad.has(i)?"conflict":"", idxToKey(i)===todayKey?"today":""].join(" ");
+      cells += `<button class="${cls}" data-i="${i}" aria-label="${fmtLong(i)}">${n+1}<span class="dots">${dots.map(x=>`<i class="dot d-${x}"></i>`).join("")}</span></button>`;
+    }
+    html += `<div class="card month"><h3>${MESES[m]} <small>${restCount} dias de descanso</small></h3><div class="grid7">${cells}</div></div>`;
+  }
+  const el = document.getElementById("months");
+  el.innerHTML = html;
+}
+
+/* =========================================================
+   FOLHA DO DIA (toque no calendário)
+   ========================================================= */
+function openDay(i){
+  const days = buildYear(), d = days[i];
+  const tags = [];
+  if(d.weekend) tags.push(`<span class="tag">🗓️ Fim de semana</span>`);
+  d.events.forEach(e=>tags.push(`<span class="tag"><i class="dot d-${e.type}"></i>${esc(TYPE_LABEL[e.type])}: ${esc(e.name)}${e.confirm?' <span class="badge warn">confirmar</span>':''}</span>`));
+  if(d.autoPonte) tags.push(`<span class="tag"><i class="dot d-ponte"></i>Ponte automática (${esc(d.autoPonte)})</span>`);
+  if(d.vac) tags.push(`<span class="tag"><i class="dot d-ferias"></i>Férias ${d.vac}</span>`);
+  if(d.mark) tags.push(`<span class="tag"><i class="dot d-${d.mark}"></i>${MARK_LABEL[d.mark]}</span>`);
+  if(!tags.length) tags.push(`<span class="tag">💼 Dia de trabalho</span>`);
+
+  const opt = (t,ic)=>{
+    const why = d.mark===t ? "Já marcado" : canMark(t,i,days);
+    return {t,ic,why};
+  };
+  const opts = [opt("abonada","🔵"),opt("aniversario","🟣"),opt("tre","🟢")];
+  const block = blockOf(days,i);
+  let html = `<h2>${fmtLong(i)}</h2><div style="margin:8px 0">${tags.join("")}</div>`;
+  if(d.rest && block) html += `<div class="alert info">Faz parte de um descanso de <b>${block[2]} dias</b> (${fmt(block[0])} a ${fmt(block[1])}).</div>`;
+  d.events.filter(e=>e.note).forEach(e=>html+=`<p class="muted small">${esc(e.note)}</p>`);
+  if(!d.official && !d.vac){
+    html += `<h3 style="margin-top:12px">Marcar folga</h3><div class="choice">`;
+    for(const o of opts){
+      html += `<button class="btn ${o.why?'ghost':'sec'}" data-mark="${o.t}" ${d.mark===o.t?'disabled':''}>${o.ic} ${MARK_LABEL[o.t].replace(" (mesário)","")}</button>`;
+    }
+    html += `</div><div id="whyBox" class="stack" style="margin-top:8px">`;
+    for(const o of opts){ if(o.why && d.mark!==o.t) html += `<div class="alert warn small"><b>${MARK_LABEL[o.t]}:</b> ${esc(o.why)}</div>`; }
+    html += `</div>`;
+  }
+  if(d.mark) html += `<button class="btn danger" data-unmark style="width:100%;margin-top:10px">Remover ${MARK_LABEL[d.mark]}</button>`;
+  if(!d.vac && !d.weekend){
+    html += `<div class="row" style="margin-top:10px"><button class="btn ghost grow" data-vac="0">Iniciar Férias 1 aqui</button><button class="btn ghost grow" data-vac="1">Iniciar Férias 2 aqui</button></div>`;
+  } else if(!d.vac){
+    html += `<div class="row" style="margin-top:10px"><button class="btn ghost grow" data-vac="0">Iniciar Férias 1 aqui</button><button class="btn ghost grow" data-vac="1">Iniciar Férias 2 aqui</button></div>`;
+  }
+  html += `<button class="btn ghost" data-close style="width:100%;margin-top:10px">Fechar</button>`;
+  showSheet(html, sheet=>{
+    sheet.querySelectorAll("[data-mark]").forEach(b=>b.onclick=()=>{
+      const t=b.dataset.mark, why=canMark(t,i);
+      if(why){ toast(why,true); return; }
+      S.marks[idxToKey(i)]=t; commit(); closeSheet(); toast(MARK_LABEL[t]+" marcada em "+fmt(i)+".");
+    });
+    const un=sheet.querySelector("[data-unmark]");
+    if(un) un.onclick=()=>{ delete S.marks[idxToKey(i)]; commit(); closeSheet(); toast("Folga removida."); };
+    sheet.querySelectorAll("[data-vac]").forEach(b=>b.onclick=()=>{ const r=setVacation(+b.dataset.vac, idxToKey(i)); if(r) toast(r,true); else { closeSheet(); toast("Férias "+(+b.dataset.vac+1)+": "+fmt(i)+" a "+fmt(i+14)+"."); } });
+  });
+}
+function blockOf(days,i){
+  if(!days[i].rest) return null;
+  let s=i,e=i; while(s>0&&days[s-1].rest) s--; while(e<NDAYS-1&&days[e+1].rest) e++;
+  return [s,e,e-s+1];
+}
+
+/* =========================================================
+   FÉRIAS
+   ========================================================= */
+function setVacation(p, startKey){
+  if(!startKey){ S.vacations[p]=null; commit(); return null; }
+  const s = keyToIdx(startKey);
+  if(!inYear(s)) return "Data fora de 2027.";
+  if(s+VAC_LEN-1>=NDAYS) return "O período de 15 dias ultrapassa 31/12/2027. Último início possível: 17/12.";
+  const o = S.vacations[1-p] ? vacRange(1-p) : null;
+  if(o){
+    const e=s+VAC_LEN-1;
+    if(!(e<o[0]||o[1]<s)) return "Sobrepõe as férias "+(2-p)+" ("+fmt(o[0])+" a "+fmt(o[1])+").";
+    if(e+1===o[0]||o[1]+1===s) return "Ficaria colado às férias "+(2-p)+" (30 dias seguidos). Deixe ao menos 1 dia de trabalho entre eles.";
+  }
+  // remove marcas que caiam dentro das férias (e avisa)
+  const removed=[];
+  for(let i=s;i<s+VAC_LEN;i++){ const k=idxToKey(i); if(S.marks[k]){ removed.push(fmt(i)+" ("+MARK_LABEL[S.marks[k]]+")"); delete S.marks[k]; } }
+  S.vacations[p]={start:startKey};
+  commit();
+  if(removed.length) setTimeout(()=>toast("Folgas removidas por estarem nas férias: "+removed.join(", ")),400);
+  return null;
+}
+function renderVacations(days){
+  let html="";
+  for(let p=0;p<2;p++){
+    const r=vacRange(p); const b = r ? blockOf(days,r[0]) : null;
+    html += `<div class="ev" style="border-left:5px solid var(--ferias)"><div class="t">Férias ${p+1} — 15 dias</div>
+      <label for="vac${p}">Data de início</label>
+      <div class="row"><input type="date" class="grow" id="vac${p}" min="2027-01-01" max="2027-12-17" value="${S.vacations[p]?S.vacations[p].start:""}">
+      <button class="btn sm ghost" data-clear="${p}">Limpar</button></div>
+      ${r?`<p class="small" style="margin:8px 0 0">📆 ${fmtLong(r[0])} a ${fmtLong(r[1])}<br>🌴 Descanso contínuo total: <b>${b?b[2]:15} dias</b>${b?` (${fmt(b[0])} a ${fmt(b[1])})`:""}</p>`:`<p class="muted small" style="margin:8px 0 0">Ainda não planejado.</p>`}
+    </div>`;
+  }
+  const el=document.getElementById("vacForm"); el.innerHTML=html;
+  for(let p=0;p<2;p++){
+    el.querySelector("#vac"+p).onchange=e=>{ const r=setVacation(p,e.target.value||null); if(r){ toast(r,true); render(); } };
+    el.querySelector(`[data-clear="${p}"]`).onclick=()=>{ S.vacations[p]=null; commit(); };
+  }
+  // melhores inícios (apenas com descanso oficial)
+  const base = days.map(d=>d.official);
+  const list=[];
+  for(let s=0;s+VAC_LEN<=NDAYS;s++){
+    const r = base.slice(); for(let i=s;i<s+VAC_LEN;i++) r[i]=true;
+    let a=s,e=s+VAC_LEN-1; while(a>0&&r[a-1]) a--; while(e<NDAYS-1&&r[e+1]) e++;
+    list.push({s,a,e,len:e-a+1});
+  }
+  list.sort((x,y)=>y.len-x.len||x.s-y.s);
+  const pick=[]; for(const it of list){ if(pick.length>=8) break; if(pick.some(p=>Math.abs(p.a-it.a)<10)) continue; pick.push(it); }
+  document.getElementById("vacBest").innerHTML = pick.map(it=>`<div class="combo"><div class="hd"><div><b>Início ${fmtLong(it.s)}</b><div class="muted small">Descanso de ${fmt(it.a)} a ${fmt(it.e)}</div></div><div class="len">${it.len}<small>dias</small></div></div>
+    <div class="row" style="margin-top:8px"><button class="btn sm sec" data-ap="0" data-s="${it.s}">Usar como Férias 1</button><button class="btn sm sec" data-ap="1" data-s="${it.s}">Usar como Férias 2</button></div></div>`).join("");
+  document.querySelectorAll("#vacBest [data-ap]").forEach(b=>b.onclick=()=>{ const r=setVacation(+b.dataset.ap, idxToKey(+b.dataset.s)); toast(r||"Férias atualizadas.", !!r); });
+}
+
+/* =========================================================
+   MOTOR DE OTIMIZAÇÃO
+   Trabalha com vetores booleanos de descanso do ano.
+   ========================================================= */
+/* Descanso "oficial": fds + feriado + ponte + facultativo (não depende do plano pessoal) */
+function officialInfo(){
+  const days = buildYearWith({marks:{},vacations:[null,null]});
+  return days;
+}
+/* buildYear com um plano alternativo (sem alterar S) */
+function buildYearWith(plan){
+  const bk = {marks:S.marks, vacations:S.vacations};
+  S.marks = plan.marks; S.vacations = plan.vacations;
+  try{ return buildYear(); } finally { S.marks=bk.marks; S.vacations=bk.vacations; }
+}
+function hasHolidayIn(days,s,e){ for(let i=s;i<=e;i++){ const d=days[i]; if(d.feriado||d.ponte||d.facultativo) return true; } return false; }
+
+/* Escolhe greedy dias de TRE preenchendo "buracos" entre blocos de descanso.
+   filter(blockA, blockB) decide quais buracos interessam. */
+function greedyTRE(days, rest, budget, filter, usedMonths){
+  const tre=[];
+  while(budget>0){
+    const bl = blocks(rest);
+    let best=null;
+    for(let k=0;k+1<bl.length;k++){
+      const A=bl[k], B=bl[k+1]; const g=B[0]-A[1]-1;
+      if(g<1||g>budget) continue;
+      if(!filter(A,B)) continue;
+      if(usedMonths && usedMonths.has(monthOf(A[1]+1))) continue;
+      const merged = B[1]-A[0]+1;
+      const score = merged/g + merged/100; // eficiência, desempate pelo tamanho
+      if(!best||score>best.score) best={score,from:A[1]+1,to:B[0]-1,merged};
+    }
+    if(!best) break;
+    for(let i=best.from;i<=best.to;i++){ rest[i]=true; tre.push(i); budget--; }
+    if(usedMonths) usedMonths.add(monthOf(best.from));
+  }
+  return tre;
+}
+/* Melhor início de férias de 15 dias dado um vetor de descanso, num intervalo de inícios permitido */
+function bestVacation(rest, minS, maxS, avoid){
+  let best=null;
+  for(let s=Math.max(0,minS); s<=Math.min(maxS,NDAYS-VAC_LEN); s++){
+    const e0=s+VAC_LEN-1;
+    if(avoid && !(e0+1<avoid[0]||avoid[1]+1<s)) continue; // sem sobrepor/colar
+    let a=s,e=e0; while(a>0&&rest[a-1]) a--; while(e<NDAYS-1&&rest[e+1]) e++;
+    // não começar férias num dia que já é folga oficial (desperdiçaria dias)
+    const waste = rest[s]?1:0;
+    const len=e-a+1-waste;
+    if(!best||len>best.len) best={s,len};
+  }
+  return best;
+}
+/* Distribui abonadas + aniversário em dias válidos e isolados */
+function placeAbonadas(plan, monthOrder){
+  const placed = [];
+  const tryMonth = (m, type) => {
+    const days = buildYearWith(plan);
+    // candidatos: dias úteis do mês, preferindo quarta, depois terça/quinta, mais perto do meio do mês
+    const cands=[];
+    for(let i=0;i<NDAYS;i++){ if(monthOf(i)!==m) continue; const d=days[i]; if(d.rest) continue;
+      const w=dow(i); const pref = w===3?0:(w===2||w===4)?1:2; const dd=new Date(START_MS+i*DAY_MS).getUTCDate();
+      cands.push({i,score:pref*100+Math.abs(15-dd)}); }
+    cands.sort((a,b)=>a.score-b.score);
+    for(const c of cands){
+      // simula a marcação com as regras reais
+      const bk={marks:S.marks,vacations:S.vacations}; S.marks=plan.marks; S.vacations=plan.vacations;
+      const why = canMark(type,c.i,days);
+      S.marks=bk.marks; S.vacations=bk.vacations;
+      if(!why){ plan.marks[idxToKey(c.i)]=type; placed.push(c.i); return true; }
+    }
+    return false;
+  };
+  tryMonth(S.birthdayMonth,"aniversario");
+  let n=0;
+  for(const m of monthOrder){ if(n>=MAX_ABONADAS) break; if(tryMonth(m,"abonada")) n++; }
+  return placed;
+}
+
+/* Executa uma estratégia e devolve o plano proposto */
+function runStrategy(kind){
+  const base = officialInfo();
+  const rest = base.map(d=>d.official);
+  const plan = {marks:{}, vacations:[null,null]};
+  let tre=[], v1=null, v2=null;
+  const holFilter = (A,B)=>hasHolidayIn(base,A[0],A[1])||hasHolidayIn(base,B[0],B[1]);
+
+  if(kind==="feriadoes"){
+    tre = greedyTRE(base, rest, MAX_TRE, holFilter);
+    v1 = bestVacation(rest,0,NDAYS);
+    if(v1){ for(let i=v1.s;i<v1.s+VAC_LEN;i++) rest[i]=true; v2=bestVacation(rest,0,NDAYS,[v1.s,v1.s+VAC_LEN-1]); }
+  } else if(kind==="longos"){
+    v1 = bestVacation(rest,0,NDAYS);
+    for(let i=v1.s;i<v1.s+VAC_LEN;i++) rest[i]=true;
+    v2 = bestVacation(rest,0,NDAYS,[v1.s,v1.s+VAC_LEN-1]);
+    for(let i=v2.s;i<v2.s+VAC_LEN;i++) rest[i]=true;
+    const inVac = (A)=> (A[0]<=v1.s+VAC_LEN-1&&A[1]>=v1.s) || (A[0]<=v2.s+VAC_LEN-1&&A[1]>=v2.s);
+    tre = greedyTRE(base, rest, MAX_TRE, (A,B)=>inVac(A)||inVac(B));
+    if(tre.length<MAX_TRE) tre = tre.concat(greedyTRE(base, rest, MAX_TRE-tre.length, holFilter));
+  } else { // equilibrada
+    v1 = bestVacation(rest,0,keyToIdx("2027-06-16"));
+    for(let i=v1.s;i<v1.s+VAC_LEN;i++) rest[i]=true;
+    v2 = bestVacation(rest,keyToIdx("2027-07-01"),NDAYS,[v1.s,v1.s+VAC_LEN-1]);
+    for(let i=v2.s;i<v2.s+VAC_LEN;i++) rest[i]=true;
+    // TRE em buracos pequenos (1–2 dias), um por mês
+    const used=new Set();
+    tre = greedyTRE(base, rest, MAX_TRE, (A,B)=>holFilter(A,B) && (B[0]-A[1]-1)<=2, used);
+    if(tre.length<MAX_TRE) tre = tre.concat(greedyTRE(base, rest, MAX_TRE-tre.length, (A,B)=>(B[0]-A[1]-1)<=1, used));
+  }
+  // TRE: remove os que caíram dentro das férias (não deveria ocorrer)
+  if(v1) plan.vacations[0]={start:idxToKey(Math.min(v1.s, v2?v2.s:v1.s))};
+  if(v2) plan.vacations[1]={start:idxToKey(Math.max(v1.s, v2.s))};
+  for(const i of tre) plan.marks[idxToKey(i)]="tre";
+
+  // ordem dos meses para abonadas: meses com menos descanso primeiro (equilibrada) ou espalhados
+  const daysNow = buildYearWith(plan);
+  const restByMonth = Array.from({length:12},(_,m)=>({m, r: daysNow.filter(d=>monthOf(d.i)===m && d.rest && !d.weekend).length}));
+  restByMonth.sort((a,b)=>a.r-b.r||a.m-b.m);
+  placeAbonadas(plan, restByMonth.map(x=>x.m));
+  return plan;
+}
+
+/* Resumo de um plano para exibição */
+function planSummary(plan){
+  const days = buildYearWith(plan);
+  const st = stats(days);
+  const bl = blocks(days.map(d=>d.rest)).filter(([s,e])=>e-s+1>=4).sort((a,b)=>(b[1]-b[0])-(a[1]-a[0])).slice(0,6);
+  return {days, st, bl};
+}
+let currentStrategy="feriadoes", lastPlan=null;
+function renderStrategy(){
+  const plan = runStrategy(currentStrategy); lastPlan=plan;
+  const {days, st, bl} = planSummary(plan);
+  const desc = {
+    feriadoes:"Os 6 TRE vão para os buracos mais eficientes ao lado de feriados e pontes. Depois as férias são encaixadas nos melhores pontos e as abonadas ficam em meses isolados.",
+    longos:"As férias são posicionadas onde geram o maior período contínuo, e os TRE são usados para esticar esses períodos ainda mais.",
+    equilibrada:"Uma férias em cada semestre, TRE em pontes curtas espalhadas (um por mês) e abonadas nos meses com menos descanso."
+  }[currentStrategy];
+  const marks = Object.keys(plan.marks).sort();
+  const list = t => marks.filter(k=>plan.marks[k]===t).map(k=>fmt(keyToIdx(k))).join(", ")||"—";
+  const vr = plan.vacations.map(v=>v?keyToIdx(v.start):null);
+  let html = `<p class="muted small">${desc}</p>
+    <div class="kpis"><div class="kpi"><b>${st.longest?st.longest[2]:0}</b><span>Maior descanso (dias)</span></div><div class="kpi"><b>${st.feriadoes}</b><span>Feriadões</span></div><div class="kpi"><b>${st.total}</b><span>Dias de descanso</span></div><div class="kpi"><b>${st.ganhos}</b><span>Dias "de graça"</span></div></div>
+    <h3>Maiores períodos do plano</h3>`;
+  html += bl.map(b=>comboCard(days,b[0],b[1],null)).join("");
+  html += `<h3>Recursos usados</h3>
+    <p class="small">🟡 <b>Férias:</b> ${vr.map(s=>s===null?"—":fmt(s)+"–"+fmt(s+14)).join(" e ")}<br>
+    🟢 <b>TRE:</b> ${list("tre")}<br>🔵 <b>Abonadas:</b> ${list("abonada")}<br>🟣 <b>Aniversário:</b> ${list("aniversario")}</p>
+    <button class="btn" id="applyStrat" style="width:100%">Aplicar este plano</button>
+    <p class="muted small" style="margin-top:6px">Substitui suas folgas e férias atuais (as datas administrativas não mudam).</p>`;
+  document.getElementById("stratOut").innerHTML = html;
+  document.getElementById("applyStrat").onclick=()=>{
+    if(!confirm("Substituir todo o seu planejamento atual por este plano?")) return;
+    S.marks = Object.assign({}, lastPlan.marks); S.vacations = lastPlan.vacations.map(v=>v?{start:v.start}:null);
+    commit(); toast("Plano aplicado! Confira no Calendário.");
+  };
+}
+
+/* Cartão visual de um período */
+function comboCard(days,s,e,extra){
+  const cnt={ferias:0,tre:0,feriado:0,ponte:0,facultativo:0,fds:0,abonada:0,aniversario:0};
+  const lists={ferias:[],tre:[],feriado:[],ponte:[],facultativo:[]};
+  let strip="";
+  for(let i=s;i<=e;i++){
+    const d=days[i];
+    const extraT = extra && extra.tre && extra.tre.includes(i) ? "tre" : extra && extra.vac && i>=extra.vac[0] && i<=extra.vac[1] ? "ferias" : null;
+    const k = d.feriado?"feriado":d.ponte?"ponte":d.facultativo?"facultativo":(extraT|| (d.vac?"ferias":d.mark?d.mark:d.weekend?"fds":""));
+    if(cnt[k]!==undefined) cnt[k]++;
+    if(lists[k]) lists[k].push(fmt(i));
+    strip+=`<i class="${k}" title="${fmt(i)}"></i>`;
+  }
+  const parts=[];
+  if(cnt.ferias) parts.push(`🟡 Férias: ${cnt.ferias} (${lists.ferias[0]}–${lists.ferias[lists.ferias.length-1]})`);
+  if(cnt.tre) parts.push(`🟢 TRE: ${cnt.tre} (${lists.tre.join(", ")})`);
+  if(cnt.feriado) parts.push(`🔴 Feriados: ${lists.feriado.join(", ")}`);
+  if(cnt.ponte) parts.push(`🟠 Pontes: ${lists.ponte.join(", ")}`);
+  if(cnt.facultativo) parts.push(`🩷 Ponto facultativo: ${lists.facultativo.join(", ")}`);
+  if(cnt.fds) parts.push(`⚪ Fins de semana: ${cnt.fds} dias`);
+  if(cnt.abonada) parts.push(`🔵 Abonada: ${cnt.abonada}`);
+  if(cnt.aniversario) parts.push(`🟣 Aniversário: ${cnt.aniversario}`);
+  const used = cnt.tre+cnt.ferias;
+  return `<div class="combo"><div class="hd"><div><b>De ${fmt(s)} a ${fmt(e)}</b><div class="muted small">${DIAS_LONG[dow(s)]} a ${DIAS_LONG[dow(e)]}</div></div><div class="len">${e-s+1}<small>dias seguidos</small></div></div>
+    <div class="strip">${strip}</div><div class="small">${parts.join("<br>")}</div>
+    ${extra&&extra.btn?extra.btn:""}
+    ${used?`<div class="muted small" style="margin-top:4px">Recursos consumidos: ${[cnt.tre?cnt.tre+" TRE":"",cnt.ferias?cnt.ferias+" dias de férias":""].filter(Boolean).join(" + ")}</div>`:""}</div>`;
+}
+
+/* =========================================================
+   SUPER COMBOS
+   ========================================================= */
+let comboFilter="all", comboCache=[];
+function findCombos(){
+  const base = officialInfo();
+  const rest = base.map(d=>d.official);
+  const bl = blocks(rest);
+  const out=[];
+  // (1) só TRE: cadeia de blocos a partir de um bloco com feriado, custo total <= 6
+  for(let a=0;a<bl.length;a++){
+    let cost=0, tre=[];
+    for(let b=a+1;b<bl.length;b++){
+      const g=bl[b][0]-bl[b-1][1]-1; cost+=g; if(cost>MAX_TRE) break;
+      for(let i=bl[b-1][1]+1;i<bl[b][0];i++) tre.push(i);
+      if(!hasHolidayIn(base,bl[a][0],bl[b][1])) continue;
+      const len=bl[b][1]-bl[a][0]+1;
+      out.push({type:"tre",s:bl[a][0],e:bl[b][1],len,tre:tre.slice(),vac:null,cost,score:len/cost});
+    }
+  }
+  // (2) com férias: cada início de 15 dias + até 6 TRE estendendo pelos buracos mais baratos
+  for(let s=0;s+VAC_LEN<=NDAYS;s++){
+    if(rest[s]) continue; // começar férias em dia útil
+    const r=rest.slice(); for(let i=s;i<s+VAC_LEN;i++) r[i]=true;
+    let a=s,e=s+VAC_LEN-1; while(a>0&&r[a-1]) a--; while(e<NDAYS-1&&r[e+1]) e++;
+    if(!hasHolidayIn(base,Math.max(0,a-7),Math.min(NDAYS-1,e+7))) continue;
+    out.push({type:"ferias",s:a,e,len:e-a+1,tre:[],vac:[s,s+VAC_LEN-1],cost:0,score:(e-a+1)});
+    let budget=MAX_TRE, tre=[];
+    for(let step=0;step<3;step++){
+      // buraco à esquerda e à direita
+      let gl=0; for(let i=a-1;i>=0&&!r[i];i--) gl++;
+      let gr=0; for(let i=e+1;i<NDAYS&&!r[i];i++) gr++;
+      let la=a-gl-1, lb=la; while(lb>0&&r[lb-1]) lb--; const gainL = gl>0&&la>=0 ? (a-lb) : 0;
+      let ra=e+gr+1, rb=ra; while(rb<NDAYS-1&&r[rb+1]) rb++; const gainR = gr>0&&ra<NDAYS ? (rb-e) : 0;
+      const cand=[];
+      if(gainL&&gl<=budget) cand.push({side:"L",g:gl,gain:gainL,ratio:gainL/gl});
+      if(gainR&&gr<=budget) cand.push({side:"R",g:gr,gain:gainR,ratio:gainR/gr});
+      if(!cand.length) break;
+      cand.sort((x,y)=>y.ratio-x.ratio);
+      const c=cand[0]; if(c.ratio<1.5) break; // só vale se rende bem
+      if(c.side==="L"){ for(let i=a-gl;i<a;i++){ r[i]=true; tre.push(i);} a=lb; }
+      else { for(let i=e+1;i<=e+gr;i++){ r[i]=true; tre.push(i);} e=rb; }
+      budget-=c.g;
+      out.push({type:"ferias",s:a,e,len:e-a+1,tre:tre.slice(),vac:[s,s+VAC_LEN-1],cost:tre.length,score:(e-a+1)});
+    }
+  }
+  // ordena e remove sobreposições muito parecidas
+  out.sort((x,y)=>y.len-x.len||x.cost-y.cost);
+  const tre = out.filter(o=>o.type==="tre").sort((x,y)=>y.score-x.score||y.len-x.len);
+  const fer = out.filter(o=>o.type==="ferias");
+  const pickDistinct=(arr,n)=>{ const p=[]; for(const o of arr){ if(p.length>=n) break; if(p.some(q=>!(o.e<q.s||q.e<o.s))) continue; p.push(o);} return p; };
+  return pickDistinct(tre,10).concat(pickDistinct(fer,10));
+}
+function renderCombos(){
+  if(!comboCache.length) comboCache=findCombos();
+  const base = officialInfo();
+  const list = comboCache.filter(c=>comboFilter==="all"||c.type===comboFilter).sort((x,y)=>y.len-x.len||x.cost-y.cost);
+  document.getElementById("combos").innerHTML = list.length ? list.map((c,n)=>comboCard(base,c.s,c.e,{tre:c.tre,vac:c.vac,
+      btn:`<div class="row" style="margin-top:8px"><span class="badge">${c.type==="tre"?"Só TRE · "+(c.len/c.cost).toFixed(1)+" dias por TRE":"Com férias"}</span><button class="btn sm sec" style="margin-left:auto" data-combo="${comboCache.indexOf(c)}">Aplicar combo</button></div>`})).join("")
+    : `<p class="muted">Nenhum combo encontrado.</p>`;
+  document.querySelectorAll("[data-combo]").forEach(b=>b.onclick=()=>applyCombo(comboCache[+b.dataset.combo]));
+}
+function applyCombo(c){
+  const days=buildYear(); const counts=countMarks();
+  const needTre = c.tre.filter(i=>S.marks[idxToKey(i)]!=="tre");
+  if(counts.tre+needTre.length>MAX_TRE){ toast("Faltam TRE: precisa de "+needTre.length+", restam "+(MAX_TRE-counts.tre)+".",true); return; }
+  for(const i of needTre){ const k=idxToKey(i); if(S.marks[k]){ toast(fmt(i)+" já tem "+MARK_LABEL[S.marks[k]]+". Remova antes.",true); return; } if(days[i].vac && !c.vac){ toast(fmt(i)+" já está nas férias.",true); return; } }
+  if(c.vac){
+    const already = [0,1].find(p=>S.vacations[p] && keyToIdx(S.vacations[p].start)===c.vac[0]);
+    if(already===undefined){
+      const slot = !S.vacations[0]?0:!S.vacations[1]?1:-1;
+      if(slot<0){ toast("Os dois períodos de férias já estão planejados. Limpe um na aba Férias.",true); return; }
+      const r=setVacation(slot, idxToKey(c.vac[0])); if(r){ toast(r,true); return; }
+    }
+  }
+  for(const i of needTre) S.marks[idxToKey(i)]="tre";
+  commit(); toast("Combo aplicado: "+fmt(c.s)+" a "+fmt(c.e)+" ("+c.len+" dias).");
+}
+
+/* =========================================================
+   CONFIGURAÇÕES — eventos administrativos
+   ========================================================= */
+function renderConfig(){
+  document.getElementById("cfgName").value=S.userName;
+  const sel=document.getElementById("cfgBday");
+  sel.innerHTML=MESES.map((m,i)=>`<option value="${i}" ${i===S.birthdayMonth?"selected":""}>${m}</option>`).join("");
+  document.getElementById("cfgBridges").checked=S.autoBridges;
+  document.getElementById("cfgStrict").checked=S.strictWeekend;
+  const evs=S.events.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  document.getElementById("evList").innerHTML = evs.map(e=>{ const i=keyToIdx(e.date);
+    return `<div class="ev" style="border-left:5px solid var(--${e.type==="facultativo"?"fac":e.type==="informativo"?"info":e.type})">
+      <div class="row"><div class="grow"><div class="t">${esc(e.name)} ${e.confirm?'<span class="badge warn">confirmar</span>':''}</div>
+      <div class="muted small">${fmtLong(i)} · ${TYPE_LABEL[e.type]}</div>${e.note?`<div class="muted small">${esc(e.note)}</div>`:""}</div>
+      <button class="btn sm ghost" data-edit="${e.id}">Editar</button></div></div>`; }).join("");
+  document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editEvent(b.dataset.edit));
+}
+function editEvent(id){
+  const e = id ? S.events.find(x=>x.id===id) : {id:null,date:"2027-01-01",name:"",type:"feriado",note:"",confirm:false};
+  const html = `<h2>${id?"Editar data":"Nova data"}</h2>
+    <label for="eName">Nome do evento</label><input id="eName" maxlength="80" value="${esc(e.name)}">
+    <label for="eDate">Data</label><input type="date" id="eDate" min="2027-01-01" max="2027-12-31" value="${e.date}">
+    <label for="eType">Tipo</label><select id="eType">${Object.keys(TYPE_LABEL).map(t=>`<option value="${t}" ${t===e.type?"selected":""}>${TYPE_LABEL[t]}</option>`).join("")}</select>
+    <label for="eNote">Observação</label><textarea id="eNote" rows="2" maxlength="200">${esc(e.note)}</textarea>
+    <div class="switch"><span>Precisa confirmar com o calendário oficial</span><input type="checkbox" id="eConf" ${e.confirm?"checked":""}></div>
+    <div id="eErr"></div>
+    <div class="row" style="margin-top:10px"><button class="btn grow" id="eSave">Salvar</button>${id?'<button class="btn danger" id="eDel">Excluir</button>':""}</div>
+    <button class="btn ghost" data-close style="width:100%;margin-top:8px">Cancelar</button>`;
+  showSheet(html, sh=>{
+    sh.querySelector("#eSave").onclick=()=>{
+      const name=sh.querySelector("#eName").value.trim(), date=sh.querySelector("#eDate").value, type=sh.querySelector("#eType").value;
+      if(!name){ sh.querySelector("#eErr").innerHTML='<div class="alert err">Informe o nome.</div>'; return; }
+      if(!/^2027-\d\d-\d\d$/.test(date)){ sh.querySelector("#eErr").innerHTML='<div class="alert err">Escolha uma data de 2027.</div>'; return; }
+      const obj={id:id||uid(),name,date,type,note:sh.querySelector("#eNote").value.trim(),confirm:sh.querySelector("#eConf").checked};
+      if(id) Object.assign(e,obj); else S.events.push(obj);
+      commit(); closeSheet(); toast("Data salva. Verifique conflitos no resumo.");
+    };
+    const del=sh.querySelector("#eDel");
+    if(del) del.onclick=()=>{ if(!confirm("Excluir "+e.name+"?")) return; S.events=S.events.filter(x=>x.id!==id); commit(); closeSheet(); toast("Data excluída."); };
+  });
+}
+
+/* =========================================================
+   INTERFACE GERAL
+   ========================================================= */
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+let toastT;
+function toast(msg,err){ const t=document.getElementById("toast"); t.textContent=msg; t.className="toast on"+(err?" err":""); clearTimeout(toastT); toastT=setTimeout(()=>t.className="toast",3200); }
+function showSheet(html, bind){
+  const bd=document.getElementById("bd"), sh=document.getElementById("sheet");
+  sh.innerHTML=html; bd.classList.add("on");
+  sh.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeSheet);
+  if(bind) bind(sh);
+}
+function closeSheet(){ document.getElementById("bd").classList.remove("on"); }
+document.getElementById("bd").addEventListener("click",e=>{ if(e.target.id==="bd") closeSheet(); });
+
+/* Salva + re-renderiza tudo */
+function commit(){ save(); comboCache=[]; render(); }
+function render(){
+  const days=buildYear();
+  const v=renderSummary(days);
+  renderCalendar(days, v.bad);
+  renderVacations(days);
+  renderConfig();
+  if(document.getElementById("v-opt").classList.contains("on")){ renderStrategy(); renderCombos(); }
+}
+
+/* Eventos fixos */
+document.getElementById("months").addEventListener("click",e=>{ const b=e.target.closest("[data-i]"); if(b) openDay(+b.dataset.i); });
+document.getElementById("tabs").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id===b.dataset.v));
+  if(b.dataset.v==="v-opt"){ renderStrategy(); renderCombos(); }
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+document.getElementById("stratSeg").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  currentStrategy=b.dataset.s;
+  document.querySelectorAll("#stratSeg button").forEach(x=>x.classList.toggle("on",x===b));
+  renderStrategy();
+});
+document.querySelectorAll("[data-cf]").forEach(b=>b.onclick=()=>{
+  comboFilter=b.dataset.cf;
+  document.querySelectorAll("[data-cf]").forEach(x=>x.className="btn sm "+(x===b?"sec":"ghost"));
+  renderCombos();
+});
+document.getElementById("cfgName").onchange=e=>{ S.userName=e.target.value.trim().slice(0,60); commit(); };
+document.getElementById("cfgBday").onchange=e=>{ S.birthdayMonth=+e.target.value; commit(); };
+document.getElementById("cfgBridges").onchange=e=>{ S.autoBridges=e.target.checked; commit(); };
+document.getElementById("cfgStrict").onchange=e=>{ S.strictWeekend=e.target.checked; commit(); };
+document.getElementById("addEv").onclick=()=>editEvent(null);
+document.getElementById("expBtn").onclick=()=>{
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="folgas_sbc_2027.json";
+  document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+};
+document.getElementById("impBtn").onclick=()=>document.getElementById("impFile").click();
+document.getElementById("impFile").onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const o=JSON.parse(r.result); if(!confirm("Substituir o planejamento atual pelo arquivo importado?")) return; S=sanitize(o); commit(); toast("Planejamento importado."); }catch(err){ toast("Arquivo inválido.",true); } e.target.value=""; };
+  r.readAsText(f);
+};
+document.getElementById("clearBtn").onclick=()=>{ if(!confirm("Remover todas as abonadas, TRE, aniversário e férias? (As datas administrativas ficam.)")) return; S.marks={}; S.vacations=[null,null]; commit(); toast("Folgas limpas."); };
+document.getElementById("resetBtn").onclick=()=>{ if(!confirm("Tem certeza? Isso apaga TODO o planejamento e volta às datas originais.")) return; S=defaultState(); commit(); toast("Planejamento restaurado."); };
+
+render();
+</script>
+</body>
+</html>
